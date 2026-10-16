@@ -1,0 +1,59 @@
+# eng-drawing PaddleOCR（可选自建；本机开发 / 有 AVX 的机器）
+# 生产 10.0.2.161 默认不起本服务，后端直连九厂 http://10.0.2.85:8868（nine-ai-prod）
+# 161 为 QEMU 无 AVX 时官方 paddle 会 Exit 132，勿强起
+# 本机开发: 自行 compose up，后端用 application.yml 默认 127.0.0.1:8868
+#
+# 内存控制:
+# - mem_limit: 4g（compose 实际生效）；deploy.resources 仅 Swarm 有效
+# - OMP/MKL 线程限制，减轻空闲预分配；大图 OOM 可把 mem_limit 调到 6g
+
+name: eng-drawing-paddle-ocr
+
+services:
+  paddle-ocr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: eng-drawing-paddle-ocr:prod
+    container_name: eng-drawing-paddle-ocr
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "8868:8868"
+    environment:
+      TZ: Asia/Shanghai
+      PYTHONUNBUFFERED: "1"
+      OCR_LANG: ch
+      OCR_USE_GPU: "false"
+      OCR_DET_LIMIT_SIDE_LEN: "1216"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      CPU_NUM: "2"
+    volumes:
+      - ./app:/app
+      - ./models:/root/.paddleocr
+    command: ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8868"]
+    # 非 Swarm 下 deploy.resources 不生效；mem_limit 才是 compose 实际内存上限
+    mem_limit: 4g
+    cpus: 2.0
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8868/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 8
+      start_period: 180s
+    networks:
+      - eq-pm2-net
+
+networks:
+  eq-pm2-net:
+    name: eq-pm2-net
+    external: true

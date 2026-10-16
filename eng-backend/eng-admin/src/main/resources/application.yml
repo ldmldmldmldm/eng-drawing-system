@@ -1,0 +1,71 @@
+server:
+  port: 6053
+  servlet:
+    context-path: /
+  tomcat:
+    # STEP/图纸上传与 Base64 产物，避免超限
+    max-http-form-post-size: 120MB
+    max-swallow-size: 120MB
+
+spring:
+  application:
+    name: eng-backend
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    multipart:
+      max-file-size: 80MB
+      max-request-size: 120MB
+  profiles:
+    active: dev
+  jackson:
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+  codec:
+    max-in-memory-size: 120MB
+
+logging:
+  file:
+    path: ${LOG_PATH:./logs}
+  level:
+    org.nineai: info
+    org.springframework: warn
+    com.baomidou.mybatisplus: warn
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  info:
+    title: 工程图纸生成系统 接口文档
+    description: 工程图纸生成系统 API
+    version: 1.0.0
+
+# 工程图 AI 入口（对齐 drawing-reader-ai）
+ai-drawing:
+  storage-dir: ${AI_DRAWING_DIR:data/eng-drawing}
+  oda-converter: ${AI_DRAWING_ODA:}
+  python: ${AI_DRAWING_PYTHON:python3}
+  # 开发默认本机 OCR；生产由 application-prod.yml / AI_DRAWING_OCR_BASE_URL 覆盖为 10.0.2.85:8868
+  ocr-base-url: ${AI_DRAWING_OCR_BASE_URL:http://127.0.0.1:8868}
+  ocr-timeout-seconds: ${AI_DRAWING_OCR_TIMEOUT_SECONDS:120}
+  # 抽取/生成共享重任务槽（ODA+Python+OCR）；超额排队，队列满返回 429
+  # 轻操作（截图识别/翻译/层次保存）独立轻槽，满则立刻 429（不占 Tomcat 久等）
+  # 多人试用：适当提高排队上限；全局槽勿盲目加大（受 OCR/CPU 约束）
+  heavy:
+    global-slots: ${AI_DRAWING_HEAVY_GLOBAL:3}
+    extract-max-running: ${AI_DRAWING_EXTRACT_MAX:3}
+    compose-max-running: ${AI_DRAWING_COMPOSE_MAX:2}
+    extract-max-queued: ${AI_DRAWING_EXTRACT_QUEUED:15}
+    compose-max-queued: ${AI_DRAWING_COMPOSE_QUEUED:10}
+    light-max-running: ${AI_DRAWING_LIGHT_MAX:4}
+  # 回退用：与库内启用项 qwen3.5-397b 一致；运行时优先读 eng_llm_config 启用行
+  deepseek-base-url: ${AI_DRAWING_DEEPSEEK_BASE_URL:http://10.0.2.77:8090/v1}
+  deepseek-api-key: ${AI_DRAWING_DEEPSEEK_API_KEY:sk-390f863b61d99693bda88f101f20578c000551bb0b24e5962bb7e9ca616156a7}
+  deepseek-model: ${AI_DRAWING_DEEPSEEK_MODEL:qwen3.5-397b}

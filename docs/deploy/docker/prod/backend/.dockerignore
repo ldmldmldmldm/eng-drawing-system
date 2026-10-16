@@ -1,0 +1,11 @@
+# 后端镜像构建上下文：只保留 Dockerfile / requirements / ODA deb
+# 禁止把运行时数据、日志、jar 打进 build（慢且易误传）
+data/
+logs/
+eng-admin.jar
+*.tar.gz
+*.tgz
+.git/
+.gitignore
+*.md
+.DS_Store

@@ -1,0 +1,830 @@
+:root {
+  --jy-primary: #1677ff;
+  --jy-primary-dark: #0b5fff;
+  --jy-accent: #f5a623;
+  --jy-sidebar: #001529;
+  --jy-sidebar-active: #1677ff;
+  /* 比率达标/未达标：大屏高对比（略深底 + 深字） */
+  --jy-ok: #4ade80;
+  --jy-bad: #f87171;
+  --jy-rate-fg: #000000;
+  --jy-bar-track: #f3f4f6;
+  /* 不良数字等强调色（非比率胶囊） */
+  --jy-danger: #9f1239;
+  --jy-border: #d0d5dd;
+  --jy-header-bg: #eef1f6;
+  --jy-text-strong: #0f172a;
+  --jy-font: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Inter, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--jy-font);
+  background: #f3f5f9;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 日产出表格：可纵向滚动 + 表头锁定 */
+.jy-report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  background: #fff;
+  font-variant-numeric: tabular-nums;
+  --jy-thead-h1: 34px;
+}
+
+.jy-report-table th,
+.jy-report-table td {
+  border-right: 1px solid var(--jy-border);
+  border-bottom: 1px solid var(--jy-border);
+  padding: 5px 4px;
+  text-align: center;
+  font-size: 12.5px;
+  vertical-align: middle;
+  word-break: break-word;
+  letter-spacing: 0.01em;
+  color: var(--jy-text-strong);
+}
+
+/* 报表数字大屏可读：字重加深（字号仍由各页/上文决定） */
+.jy-report-table tbody td {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.jy-report-table tbody td.note {
+  font-weight: 400;
+}
+
+.jy-report-table th:first-child,
+.jy-report-table td:first-child {
+  border-left: 1px solid var(--jy-border);
+}
+
+.jy-report-table thead tr:first-child th {
+  border-top: 1px solid var(--jy-border);
+}
+
+/* 原因分析 / 改善对策：更小字号，多写内容；行略高 */
+.jy-report-table td.note {
+  min-height: 72px;
+  height: 72px;
+  vertical-align: top;
+  padding: 4px 6px;
+  font-size: 11px;
+  text-align: left;
+}
+
+/* 问题描述 / 原因分析&改善对策：一/二/三级统一列宽（对齐一阶） */
+.jy-report-table col.col-note-problem,
+.jy-report-table th.col-note-problem,
+.jy-report-table td.col-note-problem {
+  width: 12%;
+}
+
+.jy-report-table col.col-note-improve,
+.jy-report-table th.col-note-improve,
+.jy-report-table td.col-note-improve {
+  width: 11%;
+}
+
+.jy-report-table thead th {
+  position: sticky;
+  background: var(--jy-header-bg);
+  font-weight: 700;
+  color: var(--jy-text-strong);
+  z-index: 5;
+}
+
+/*
+ * 双行表头 sticky：第一行固定高度，第二行 top 与之对齐，避免日期列滚动错位。
+ * rowspan 列 z-index 更高，避免被第二行盖住。
+ */
+.jy-report-table thead tr:first-child th {
+  top: 0;
+  z-index: 6;
+  box-shadow: none;
+}
+
+.jy-report-table thead tr:first-child th[rowspan] {
+  z-index: 8;
+}
+
+.jy-report-table thead tr:first-child th:not([rowspan]) {
+  height: var(--jy-thead-h1);
+  box-sizing: border-box;
+}
+
+.jy-report-table thead tr:nth-child(2) th {
+  top: var(--jy-thead-h1);
+  z-index: 7;
+  height: var(--jy-thead-h1);
+  box-sizing: border-box;
+  box-shadow: none;
+}
+
+.jy-report-table tbody tr:nth-child(even) td {
+  background: #fafbfd;
+}
+
+.jy-report-table tbody tr:hover td {
+  background: #f0f5ff !important;
+}
+
+.jy-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.jy-pill.ok {
+  background: var(--jy-ok);
+  color: var(--jy-rate-fg);
+}
+
+.jy-pill.bad {
+  background: var(--jy-bad);
+  color: var(--jy-rate-fg);
+}
+
+.jy-pill.clickable {
+  cursor: pointer;
+}
+
+.jy-pill.clickable:hover {
+  filter: brightness(0.97);
+}
+
+/* 达成率：圆角进度条（灰轨 + 按比例填充；≥100 绿 / <100 红） */
+.jy-rate-bar {
+  display: inline-block;
+  width: 100%;
+  max-width: 88px;
+  vertical-align: middle;
+}
+
+.jy-rate-bar__track {
+  position: relative;
+  display: block;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--jy-bar-track);
+  overflow: hidden;
+}
+
+.jy-rate-bar__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.jy-rate-bar.ok .jy-rate-bar__fill {
+  background: var(--jy-ok);
+}
+
+.jy-rate-bar.bad .jy-rate-bar__fill {
+  background: var(--jy-bad);
+}
+
+.jy-rate-bar__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--jy-rate-fg);
+  text-shadow: none;
+}
+
+.jy-rate-bar.clickable {
+  cursor: pointer;
+}
+
+.jy-rate-bar.clickable:hover .jy-rate-bar__track {
+  filter: brightness(0.98);
+}
+
+.jy-proc-link {
+  color: #1677ff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.jy-proc-link:hover {
+  text-decoration: underline;
+}
+
+.jy-nav-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  width: 100%;
+  min-height: 24px;
+  font-size: 12px;
+}
+
+.jy-nav-bar .jy-nav-crumb {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px !important;
+  line-height: 24px;
+}
+
+.jy-nav-bar .jy-nav-crumb ol,
+.jy-nav-bar .jy-nav-crumb .ant-breadcrumb-link,
+.jy-nav-bar .jy-nav-crumb .ant-breadcrumb-separator,
+.jy-nav-bar .jy-nav-crumb a {
+  font-size: 12px !important;
+  line-height: 24px;
+}
+
+.jy-nav-bar .jy-nav-extra {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.jy-nav-bar .ant-btn,
+.jy-nav-bar .ant-btn-sm {
+  font-size: 12px !important;
+  height: 24px;
+  width: auto;
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+/* 返回：与一阶「生成图片」同系 primary ghost；宽度随文案 */
+.jy-nav-bar .jy-nav-back.ant-btn-primary.ant-btn-background-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  width: auto !important;
+  min-width: 0 !important;
+  padding-inline: 8px !important;
+}
+
+.jy-nav-bar .jy-nav-back .anticon {
+  font-size: 12px;
+}
+
+.jy-mock-tag {
+  margin-left: 4px;
+  opacity: 0.9;
+  font-size: 12px;
+  line-height: 22px;
+  height: 22px;
+}
+
+/* 管理列表页：标题/筛选固定，仅表格区域可滚（项目配置、用户管理） */
+.page-list {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-list > .ant-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-list > .ant-card > .ant-card-head {
+  flex-shrink: 0;
+}
+
+.page-list > .ant-card > .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-list > .ant-card > .ant-card-body > .ant-alert,
+.page-list > .ant-card > .ant-card-body > .ant-form {
+  flex-shrink: 0;
+}
+
+/*
+ * 管理列表：工具栏 / 筛选对齐日报筛选条（12px / 高 24）
+ * 退出全屏放卡片 extra，勿再用右上角浮层盖住「新建」等按钮
+ */
+.page-list .ant-card-extra .ant-btn,
+.page-list .ant-card-extra .ant-btn-sm,
+.page-list .list-filter-form .ant-btn,
+.page-list .list-filter-form .ant-btn-sm,
+.page-list .list-toolbar .ant-btn,
+.page-list .list-toolbar .ant-btn-sm {
+  height: 24px !important;
+  padding-block: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  font-size: 12px !important;
+}
+
+.page-list .jy-fs-exit-inline {
+  height: 24px;
+  padding-inline: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px !important;
+}
+
+.page-list .list-filter-form .ant-form-item-label > label {
+  font-size: 12px !important;
+  font-weight: 600;
+  color: #1f2937;
+  height: auto !important;
+}
+
+.page-list .list-filter-form .ant-input,
+.page-list .list-filter-form .ant-input-affix-wrapper,
+.page-list .list-filter-form .ant-select,
+.page-list .list-filter-form .ant-select-sm,
+.page-list .list-filter-form .ant-select-selection-item,
+.page-list .list-filter-form .ant-select-selection-placeholder,
+.page-list .list-filter-form .ant-picker,
+.page-list .list-filter-form .ant-picker-input > input {
+  font-size: 12px !important;
+}
+
+.page-list .list-filter-form .ant-select .ant-select-selector,
+.page-list .list-filter-form .ant-select-sm .ant-select-selector,
+.page-list .list-filter-form .ant-select-single .ant-select-selector {
+  height: 24px !important;
+  min-height: 24px !important;
+  font-size: 12px !important;
+  align-items: center !important;
+}
+
+.page-list .list-filter-form .ant-select-single .ant-select-selection-item,
+.page-list .list-filter-form .ant-select-single .ant-select-selection-placeholder {
+  line-height: 22px !important;
+}
+
+.page-list .list-filter-form .ant-input,
+.page-list .list-filter-form .ant-input-affix-wrapper {
+  height: 24px !important;
+  padding-block: 0 !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+/*
+ * allow-clear 时边框只画在 affix-wrapper；内层 .ant-input 若再套 height/白底会盖住圆角框线。
+ * 勿对「wrapper 内的 input」写满高白底或独立 border。
+ */
+.page-list .list-filter-form .ant-input-affix-wrapper .ant-input {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  line-height: 22px !important;
+}
+
+.page-list .list-filter-form .ant-picker,
+.page-list .list-filter-form .ant-picker-small {
+  height: 24px !important;
+  padding-block: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.page-list .list-filter-form .ant-picker .ant-picker-input > input {
+  height: 22px !important;
+  line-height: 22px !important;
+}
+
+.page-list .list-filter-form .ant-input-number,
+.page-list .list-filter-form .ant-input-number-sm {
+  height: 24px !important;
+  font-size: 12px !important;
+}
+
+.page-list .list-filter-form .ant-input-number-input {
+  height: 22px !important;
+  font-size: 12px !important;
+}
+
+/* 管理页问号说明（不占正文空间；点击展示） */
+.jy-page-help-btn.ant-btn {
+  width: 24px;
+  height: 24px !important;
+  padding: 0 !important;
+  color: rgba(0, 0, 0, 0.45);
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.jy-page-help-btn.ant-btn:hover {
+  color: var(--jy-primary, #1677ff);
+}
+
+/* 报表页：吃满内容区剩余高度；行少不滚，行多才在表内滚 */
+.page-report {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+.page-report .filter-card,
+.page-report .jy-nav-bar {
+  flex-shrink: 0;
+}
+
+.page-report .table-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-report .table-card > .ant-spin-nested-loading,
+.page-report .table-card .ant-spin-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-report .table-card .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 6px 8px !important;
+}
+
+.table-scroll {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/*
+ * 管理列表铁律：表头锁定。
+ * 标题/筛选固定，仅 .table-scroll 内滚；thead sticky。
+ */
+.page-list .table-scroll .ant-table-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--jy-header-bg, #eef1f6) !important;
+  box-shadow: 0 1px 0 0 var(--jy-border, #d0d5dd);
+}
+
+.page-list .ant-table-thead > tr > th {
+  background: var(--jy-header-bg, #eef1f6) !important;
+  font-weight: 600;
+  color: var(--jy-text-strong, #0f172a);
+}
+
+.page-report .table-card .hint {
+  flex-shrink: 0;
+}
+
+/* 统一卡片观感：圆角轻阴影 + 收紧内边距（边距吃满） */
+.ant-card {
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.ant-card .ant-card-head {
+  min-height: 40px;
+  padding: 0 10px !important;
+}
+
+.ant-card .ant-card-head-title {
+  padding: 10px 0 !important;
+}
+
+.ant-card .ant-card-extra {
+  padding: 10px 0 !important;
+}
+
+.ant-card .ant-card-body {
+  padding: 8px 10px !important;
+}
+
+/* 报表表格卡：再贴一点边，表格横向尽量铺满 */
+.table-card .ant-card-body {
+  padding: 6px 8px !important;
+}
+
+/*
+ * 报表筛选条（会议投屏）：单行紧凑，品名多选不纵向撑高。
+ * 页面用 .filter-form + size="small"；品名 max-tag-count=1 + 省略。
+ * 标签与控件一律左右排布、字号统一 12px。
+ */
+.filter-card {
+  margin-bottom: 6px !important;
+}
+
+.filter-card .ant-card-body {
+  padding: 4px 8px !important;
+}
+
+.filter-card .filter-form {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  row-gap: 0;
+  column-gap: 0;
+  font-size: 12px;
+}
+
+.filter-card .filter-form > .ant-form-item {
+  margin-inline-end: 10px;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+}
+
+/* Ant Design 默认 form-item-row 可 wrap，窄宽时会把 label 顶到上一行 —— 强制左右 */
+.filter-card .filter-form .ant-form-item-row {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  align-items: center;
+}
+
+.filter-card .filter-form .ant-form-item-label {
+  padding: 0 !important;
+  flex: 0 0 auto;
+}
+
+.filter-card .filter-form .ant-form-item-label > label {
+  font-size: 12px !important;
+  font-weight: 600;
+  height: auto !important;
+  color: #1f2937;
+}
+
+.filter-card .filter-form .ant-form-item-label > label::after {
+  margin-inline: 2px 6px 0 2px;
+}
+
+.filter-card .filter-form .ant-form-item-control {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.filter-card .filter-form .ant-form-item-control-input {
+  min-height: 24px;
+  height: 24px;
+  align-items: center;
+}
+
+.filter-card .filter-form .ant-form-item-control-input-content {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* 品名：固定控件宽，勿 width:100%（会挤成上下结构） */
+.filter-card .filter-form .filter-product {
+  flex: 0 1 auto;
+  max-width: none;
+}
+
+.filter-card .filter-form .filter-product .ant-select {
+  width: 240px;
+}
+
+.filter-card .filter-form .filter-actions {
+  margin-inline-end: 0;
+  margin-left: auto;
+}
+
+.filter-card .jy-fs-exit-inline {
+  height: 24px;
+  padding-inline: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px !important;
+}
+
+/* 标签 / 框内文字同字号（含班次单选、日期、多选 tag、按钮） */
+.filter-card .ant-select,
+.filter-card .ant-select-sm,
+.filter-card .ant-select-selection-item,
+.filter-card .ant-select-selection-placeholder,
+.filter-card .ant-select-selection-search-input,
+.filter-card .ant-picker,
+.filter-card .ant-picker-input > input,
+.filter-card .ant-btn,
+.filter-card .ant-btn-sm {
+  font-size: 12px !important;
+}
+
+/*
+ * 筛选控件统一高度 24px，避免单选 / 多选 / 日期上下错位
+ * （Ant small 默认对多选与单选盒模型略有差异）
+ */
+.filter-card .ant-picker,
+.filter-card .ant-picker-small {
+  height: 24px !important;
+}
+
+.filter-card .ant-select .ant-select-selector,
+.filter-card .ant-select-sm .ant-select-selector,
+.filter-card .ant-select-single .ant-select-selector,
+.filter-card .ant-select-single.ant-select-sm .ant-select-selector {
+  height: 24px !important;
+  min-height: 24px !important;
+  font-size: 12px !important;
+  align-items: center !important;
+}
+
+.filter-card .ant-select-single .ant-select-selection-item,
+.filter-card .ant-select-single.ant-select-sm .ant-select-selection-item,
+.filter-card .ant-select-single .ant-select-selection-placeholder,
+.filter-card .ant-select-single.ant-select-sm .ant-select-selection-placeholder {
+  font-size: 12px !important;
+  line-height: 22px !important;
+}
+
+.filter-card .ant-picker-small,
+.filter-card .ant-picker {
+  padding-block: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.filter-card .ant-picker .ant-picker-input > input {
+  height: 22px !important;
+  line-height: 22px !important;
+  font-size: 12px !important;
+}
+
+.filter-card .ant-btn-sm {
+  height: 24px !important;
+  padding-block: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+}
+
+/* 多选强制单行：禁止 tag 换行撑高 */
+.filter-card .ant-select-multiple .ant-select-selector {
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  overflow: hidden;
+  min-height: 24px !important;
+  height: 24px !important;
+  padding-block: 0 !important;
+  font-size: 12px !important;
+}
+
+.filter-card .ant-select-multiple .ant-select-selection-overflow {
+  flex-wrap: nowrap !important;
+  overflow: hidden;
+}
+
+.filter-card .ant-select-multiple .ant-select-selection-item {
+  max-width: 200px;
+  margin-top: 1px !important;
+  margin-bottom: 1px !important;
+  line-height: 18px;
+  height: 18px;
+  font-size: 12px !important;
+}
+
+.filter-card .ant-select-multiple .ant-select-selection-item-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px !important;
+}
+
+/*
+ * 下拉挂到 body：选项字号与筛选条选中态统一 12px
+ * （含维度/项目/品名等 Select）
+ */
+.ant-select-dropdown .ant-select-item {
+  font-size: 12px !important;
+  min-height: 28px;
+  line-height: 28px;
+}
+
+.ant-select-dropdown .ant-select-item-option-content {
+  font-size: 12px !important;
+}
+
+/* 品名下拉：完整展示长料号（不截断） */
+.capa-product-dropdown.ant-select-dropdown,
+.daily-product-dropdown.ant-select-dropdown {
+  min-width: 320px !important;
+}
+
+.capa-product-dropdown .ant-select-item-option-content,
+.daily-product-dropdown .ant-select-item-option-content {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.ant-picker-dropdown {
+  font-size: 12px;
+}
+
+.ant-picker-dropdown .ant-picker-cell-inner,
+.ant-picker-dropdown .ant-picker-header-view,
+.ant-picker-dropdown .ant-picker-content th {
+  font-size: 12px !important;
+}
+
+/*
+ * 产能达成率 · 周/月周期面板：对齐「生产日期」观感
+ * - 周改为日历点选（非 week 整行高亮）
+ * - 底部快捷居中，同「今天」
+ */
+.capa-period-picker-dropdown .capa-period-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 0 2px;
+}
+
+.capa-period-picker-dropdown .capa-period-footer .ant-btn-link {
+  font-size: 12px;
+  height: 24px;
+  padding-inline: 8px;
+  font-weight: 500;
+  color: var(--jy-primary, #1677ff);
+}
+
+.capa-period-picker-dropdown .ant-picker-cell .ant-picker-cell-inner {
+  border-radius: 6px !important;
+}
+
+.capa-period-picker-dropdown .ant-picker-cell-selected .ant-picker-cell-inner,
+.capa-period-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--jy-primary, #1677ff) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+
+.capa-period-picker-dropdown .ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-radius: 6px !important;
+}
+
+/* 月面板：月份格子略加大圆角，更接近日格 */
+.capa-month-picker-dropdown .ant-picker-cell .ant-picker-cell-inner {
+  border-radius: 8px !important;
+  width: 56px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+.ant-btn-primary {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}

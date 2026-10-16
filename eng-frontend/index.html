@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1a3a" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" href="/favicon.ico" />
+    <!-- 不用 Google Fonts：国内常超时会卡住白屏；用系统字体栈（见 style.css） -->
+    <title>工程图纸生成系统</title>
+    <style>
+      /* JS 未就绪前占位，避免纯白屏；Vue mount 后整段被替换 */
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #f3f5f9;
+      }
+      #app-boot {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+        color: #475569;
+        font-size: 14px;
+      }
+      #app-boot .boot-brand {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: 0.02em;
+      }
+      #app-boot .boot-spin {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #dbeafe;
+        border-top-color: #1677ff;
+        border-radius: 50%;
+        animation: eng-boot-spin 0.8s linear infinite;
+      }
+      @keyframes eng-boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="app-boot" role="status" aria-live="polite">
+        <div class="boot-spin" aria-hidden="true"></div>
+        <div class="boot-brand">工程图纸生成系统</div>
+        <div>正在加载，请稍候…</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

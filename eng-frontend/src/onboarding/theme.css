@@ -1,0 +1,87 @@
+/* 新手引导：对齐工程图 UI token（主色 #1677ff，轻阴影，勿紫系） */
+.driver-popover.eng-tour-popover {
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  max-width: 320px;
+  padding: 14px 16px 12px;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+  line-height: 22px;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-description {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #475569;
+  margin: 0;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-progress-text {
+  font-size: 11px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-navigation-btns {
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-prev-btn,
+.driver-popover.eng-tour-popover .driver-popover-next-btn,
+.driver-popover.eng-tour-popover .driver-popover-close-btn {
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+  padding: 0 12px;
+  height: 28px;
+  text-shadow: none;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-prev-btn {
+  background: #fff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-next-btn {
+  background: #1677ff;
+  color: #fff;
+  border: 1px solid #1677ff;
+  text-shadow: none;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-close-btn {
+  color: #94a3b8;
+}
+
+.driver-popover.eng-tour-popover .driver-popover-arrow-side-left.driver-popover-arrow,
+.driver-popover.eng-tour-popover .driver-popover-arrow-side-right.driver-popover-arrow,
+.driver-popover.eng-tour-popover .driver-popover-arrow-side-top.driver-popover-arrow,
+.driver-popover.eng-tour-popover .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-color: #fff;
+}
+
+.driver-overlay {
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+
+.driver-active-element,
+[data-tour] {
+  /* 锚点本身不改布局 */
+}
+
+body.driver-active .driver-active-element {
+  outline: 2px solid #1677ff !important;
+  outline-offset: 2px;
+  border-radius: 6px;
+}

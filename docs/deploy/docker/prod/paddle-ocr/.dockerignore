@@ -1,0 +1,7 @@
+# OCR 镜像构建：模型靠运行时挂载 ./models，勿打进 build 上下文
+models/
+.git/
+.gitignore
+*.md
+.DS_Store
+*.tar.gz

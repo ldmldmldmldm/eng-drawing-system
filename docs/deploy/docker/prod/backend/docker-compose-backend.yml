@@ -1,0 +1,60 @@
+# eng-drawing-system 后端（生产）
+# 服务器: 10.0.2.161:6053
+# 依赖: eq-pm2-net；共用 eq-pm2-mysql / 库 eng_drawing
+# OCR: 生产共用九厂 nine-ai 的 http://10.0.2.85:8868（与 nine-ai-prod application-prod.yml 一致）
+# ODA：打进镜像 /opt/oda + xvfb 包装脚本 /usr/local/bin/oda-file-converter（无头必需）；勿挂宿主机、勿用 Mac .app
+# 使用: cd /data01/eng-drawing/backend && sudo docker compose -f docker-compose-backend.yml up -d --build
+# name 写死，避免同机其它 backend 目录误伤
+
+name: eng-drawing-backend
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: eng-drawing-backend:17-jre-py
+    container_name: eng-drawing-backend
+    restart: unless-stopped
+    working_dir: /app
+    user: "0:0"
+    command:
+      - java
+      - -Xms512m
+      - -Xmx4g
+      - -Dfile.encoding=UTF-8
+      - -XX:+HeapDumpOnOutOfMemoryError
+      - -XX:HeapDumpPath=/app/logs/heapdump.hprof
+      - -jar
+      - /app/eng-admin.jar
+      - --spring.profiles.active=prod
+      - --spring.config.location=optional:classpath:/application.yml,optional:file:/app/config/application-prod.yml
+    ports:
+      - "6053:6053"
+    environment:
+      TZ: Asia/Shanghai
+      LOG_PATH: /app/logs
+      AI_DRAWING_DIR: /data/eng-drawing
+      AI_DRAWING_PYTHON: /opt/aidrawing-py/bin/python3
+      AI_DRAWING_ODA: /usr/local/bin/oda-file-converter
+      # 生产 OCR：九厂 85 机（开发本机仍用 application.yml 默认 127.0.0.1:8868）
+      AI_DRAWING_OCR_BASE_URL: http://10.0.2.85:8868
+    volumes:
+      - ./application-prod.yml:/app/config/application-prod.yml:ro
+      - ./eng-admin.jar:/app/eng-admin.jar:ro
+      - ./logs:/app/logs
+      - ./data:/data/eng-drawing
+    healthcheck:
+      # JRE 镜像无 curl；用 bash /dev/tcp 探活（Temurin jammy 自带 bash）
+      test: ["CMD-SHELL", "bash -c 'echo >/dev/tcp/127.0.0.1/6053'"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    networks:
+      - eq-pm2-net
+
+networks:
+  eq-pm2-net:
+    name: eq-pm2-net
+    external: true

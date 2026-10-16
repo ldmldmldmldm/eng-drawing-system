@@ -1,0 +1,32 @@
+{
+  "name": "eng-frontend",
+  "version": "1.0.0",
+  "description": "工程图纸生成系统 前端",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 8893",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.2.5",
+    "axios": "^1.7.9",
+    "dayjs": "^1.11.13",
+    "driver.js": "^1.8.0",
+    "occt-import-js": "^0.0.23",
+    "pinia": "^2.2.6",
+    "three": "^0.186.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "typescript": "~5.7.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.10"
+  }
+}

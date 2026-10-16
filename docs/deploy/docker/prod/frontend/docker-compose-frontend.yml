@@ -1,0 +1,27 @@
+# eng-drawing-system 前端 nginx（生产）
+# 访问: http://10.0.2.161:8893  API 反代 -> eng-drawing-backend:6053（剥 /api 前缀）
+# 网络: 共用 eq-pm2-net（external）
+# 使用: cd /data01/eng-drawing/frontend && sudo docker compose -f docker-compose-frontend.yml up -d
+# 项目名必须唯一：同机多项目目录都叫 frontend 时，靠 name 隔离
+
+name: eng-drawing-frontend
+
+services:
+  frontend:
+    # DaoCloud 前缀拉镜像；不改服务器 daemon、不 restart docker
+    image: docker.m.daocloud.io/library/nginx:alpine
+    container_name: eng-drawing-frontend
+    # 仅本容器重启策略，不影响其它项目
+    restart: unless-stopped
+    ports:
+      - "8893:80"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - eq-pm2-net
+
+networks:
+  eq-pm2-net:
+    name: eq-pm2-net
+    external: true
