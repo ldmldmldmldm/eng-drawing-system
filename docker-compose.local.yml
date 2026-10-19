@@ -1,0 +1,74 @@
+name: eng-drawing-local
+
+services:
+  # 1. 本地 MySQL 数据库服务（首次启动自动执行 init.sql 初始化表结构与初始账号）
+  mysql:
+    image: mysql:latest
+    container_name: eng-mysql-local
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eng_drawing
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      # 映射到宿主机 23306 端口，避免与宿主机本地 3306 产生端口冲突
+      - "23306:3306"
+    volumes:
+      - ./docs/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql-local-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # 2. 后端服务（基于 Eclipse Temurin JRE 17 容器直接运行打包后的 Spring Boot jar）
+  backend:
+    image: eclipse-temurin:17-jre-jammy
+    container_name: eng-drawing-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    working_dir: /app
+    ports:
+      - "6053:6053"
+    environment:
+      TZ: Asia/Shanghai
+      LOG_PATH: /app/logs
+      AI_DRAWING_DIR: /data/eng-drawing
+      # 容器网络内直连 mysql 服务的 3306 端口
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eng_drawing?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - ./eng-backend/eng-admin/target/eng-admin.jar:/app/eng-admin.jar:ro
+      - ./logs:/app/logs
+      - ./data/eng-drawing:/data/eng-drawing
+    command:
+      - java
+      - -Xms512m
+      - -Xmx2g
+      - -Dfile.encoding=UTF-8
+      - -jar
+      - /app/eng-admin.jar
+      - --spring.profiles.active=dev
+
+  # 3. 前端 Nginx 服务（反向代理 /api 到后端 eng-drawing-backend:6053）
+  frontend:
+    image: nginx:alpine
+    container_name: eng-drawing-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8893:80"
+    volumes:
+      - ./eng-frontend/dist:/usr/share/nginx/html:ro
+      - ./docs/deploy/docker/prod/frontend/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  mysql-local-data:

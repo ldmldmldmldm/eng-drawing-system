@@ -10,6 +10,9 @@ CREATE DATABASE IF NOT EXISTS eng_drawing
 
 USE eng_drawing;
 
+-- 强制客户端连接按 utf8mb4 解析后续字节；缺少此行时中文会被按 latin1 双重编码写入。
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS sys_user (
   id            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
   username      VARCHAR(64)  NOT NULL COMMENT '登录账号（钉钉工号）',
