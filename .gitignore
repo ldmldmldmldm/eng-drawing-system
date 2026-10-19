@@ -58,6 +58,8 @@ replay_pid*
 **/application-local.yml
 **/application-local.yaml
 **/application-dev.local.yml
+**/.vscode
+**/.workbuddy
 
 **/node_modules/
 **/dist/
